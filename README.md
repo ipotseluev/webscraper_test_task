@@ -1,7 +1,16 @@
-The script gathers info about coursera.org courses matching particular category.
+# Coursera.org web scraper
 
-Usage:
-get_coursera_courses.py CATEGORY_NAME
+The application gathers info about coursera.org courses matching particular category and results in CSV file containing info about courses.
 
-Output:
-courses.csv
+## Usage
+
+To get help or usage, run:
+run.py -h|--help | -u|--usage
+
+## Unit tests
+
+To perform tests, run:
+
+```bash
+pytest -vv ./tests
+```
