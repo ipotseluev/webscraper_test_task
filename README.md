@@ -25,3 +25,21 @@ To install tests requirements:
 ```sh
 pip install -r ./requirements/requirements.tests
 ```
+
+## Category examples
+
+- data-science
+- business
+- computer-science
+- information-technology
+- health
+- language-learning
+And other
+
+## Known bugs
+
+### For some courses downloaded html doesn't contain some info such as number of students or course name. Looks like it depends on previously requested links. Here are these courses:
+
+https://www.coursera.org/professional-certificates/google-project-management
+https://www.coursera.org/professional-certificates/ibm-data-analyst
+https://www.coursera.org/professional-certificates/google-it-support

@@ -6,7 +6,7 @@ import cmd_line_parser as cmd_line_parser
 
 
 async def run(parser: cmd_line_parser.Parser):
-    async_http_reader = AiohttpReader(read_timeout_sec=30)
+    async_http_reader = AiohttpReader()
     exit_code = 0
     try:
         application = CourseraWebScraper(async_http_reader=async_http_reader)
