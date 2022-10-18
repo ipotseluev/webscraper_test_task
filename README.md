@@ -11,7 +11,9 @@ pip install -r ./requirements/requirements
 ## Usage
 
 To get help or usage, run:
+```sh
 python src/run.py -h|--help | -u|--usage
+```
 
 ## Unit tests
 
@@ -34,12 +36,15 @@ pip install -r ./requirements/requirements.tests
 - information-technology
 - health
 - language-learning
-And other
+
+and other
 
 ## Known bugs
 
-### For some courses downloaded html doesn't contain some info such as number of students or course name. Looks like it depends on previously requested links. Here are these courses:
+1. For some courses downloaded html doesn't contain some info such as number of students or course name. Looks like it depends on previously requested links. Here are these courses:
 
+```
 https://www.coursera.org/professional-certificates/google-project-management
 https://www.coursera.org/professional-certificates/ibm-data-analyst
 https://www.coursera.org/professional-certificates/google-it-support
+```

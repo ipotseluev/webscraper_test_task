@@ -21,18 +21,18 @@ class CourseraWebScraper:
         self.async_http_reader = async_http_reader
         self.task_counter = 0
         self.links_count = 0
+        self.links_queue = []
 
-    async def _get_courses_links(self, courses_category: str) -> list[str]:
+    async def _get_courses_links(self, courses_category: str):
         """
-        Returns list of links to courses of given category
+        Collects list of links to courses of given category
         """
         category_browse_url = f"{self.BASE_URL}/browse/{courses_category}"
         html_text = await self.async_http_reader.get_text(url=category_browse_url)
         soup = BeautifulSoup(html_text, "html.parser")
         product_cards = soup.findAll('div', class_='rc-ProductCard')
-        courses_links = [card.find('a', class_='CardText-link').get('href') for card in product_cards]
-        self.links_count = len(courses_links)
-        return courses_links
+        self.links_queue = [card.find('a', class_='CardText-link').get('href') for card in product_cards]
+        self.links_count = len(self.links_queue)
 
     async def _get_course_data(self, course_link: str) -> CourseInfo:
         """
@@ -51,8 +51,10 @@ class CourseraWebScraper:
         description = course_scrapper.get_description()
         provider = course_scrapper.get_provider()
 
+        # To satisfy IDE type checker
         assert isinstance(name, str)
         assert isinstance(provider, str)
+
         return CourseInfo(
             name=name,
             provider=provider,
@@ -61,36 +63,37 @@ class CourseraWebScraper:
             ratings_count=ratings_count
         )
 
-    async def _collect_courses_data(
-        self,
-        courses_links: list[str],
-        workers_count: int
-    ):
+    async def _get_course_data_worker(self):
+        """
+        Gets link from queue and passes it to method collecting results
+        """
+        result = []
+        while self.links_queue:
+            link = self.links_queue.pop(0)
+            course_info = await self._get_course_data(course_link=link)
+            result.append(course_info)
+        return result
+
+    async def _collect_courses_data(self, workers_count: int):
         """
         Executes tasks for gathering info about courses and returns a list of information about courses
         """
         self.task_counter = 0
-        courses_info: list[CourseInfo] = []
-        while courses_links:
-            tasks = []
-            for i in range(min(workers_count, len(courses_links))):
-                link = courses_links.pop(0)
-                task = asyncio.create_task(
-                        self._get_course_data(course_link=link)
-                )
-                tasks.append(task)
-            courses_info += await asyncio.gather(*tasks)
-        return courses_info
+        tasks = []
+        for i in range(workers_count):
+            task = asyncio.create_task(self._get_course_data_worker())
+            tasks.append(task)
+        courses_list = []
+        for result in await asyncio.gather(*tasks):
+            courses_list += result
+        return courses_list
 
     async def scrap_courses_info(self, courses_category: str, workers_count: int, output_file_path: str):
         # 1. Collect links to courses from the given category
-        courses_links = await self._get_courses_links(courses_category)
+        await self._get_courses_links(courses_category)
 
-        # 2. Collect courses info using max(workers_count, len(links_list) task pool
-        courses_data = await self._collect_courses_data(
-            courses_links=courses_links,
-            workers_count=workers_count
-        )
+        # 2. Collect courses info
+        courses_data = await self._collect_courses_data(workers_count=workers_count)
 
         # 3. Write to csv
         with open(output_file_path, 'w', newline='') as f:
